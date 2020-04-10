@@ -66,6 +66,7 @@ TP-module is a json of the structure:
 
 ## How to actually use this sdk 
 https://sdk.amazonaws.com/cpp/api/0.14.3/index.html 
+
 https://github.com/uncetlab/unreal_aws_example_project
 
 TODO: link to blog about how I have implenented some of the clients
