@@ -1,0 +1,38 @@
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- For documentation on what this file does see https://forums.unrealengine.com/development-discussion/android-development/76381-how-do-i-include-native-libraries-from-a-plugin -->
+  <!-- The basic idea is that this file tells what static libraries actually need to be copied into the final apk -->
+  <!-- Also added the android permission for INTERNET because if you are using this sdk there is a 99% chance you want to use the internet -->
+  <!-- init section is always evaluated once per architecture -->
+  <init>
+  </init>
+
+  <!-- Copy files to the intermediate folder for the build process-->
+  <resourceCopies>
+   
+    <log text="Copying libaws-c-common.so from to Intermediate"/>
+    <copyFile src="$S(PluginDir)/Android/$S(Architecture)/libaws-c-common.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libaws-c-common.so" />
+    <log text="Copying libaws-checksums.so to Intermediate"/>
+    <copyFile src="$S(PluginDir)/Android/$S(Architecture)/libaws-checksums.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libaws-checksums.so" />
+	<log text="Copying libaws-c-event-stream.so to Intermediate"/>
+	<copyFile src="$S(PluginDir)/Android/$S(Architecture)/libaws-c-event-stream.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libaws-c-event-stream.so" />
+    <log text="Copying libaws-cpp-sdk-core.so to Intermediate"/>
+    <copyFile src="$S(PluginDir)/Android/$S(Architecture)/libaws-cpp-sdk-core.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libaws-cpp-sdk-core.so" />
+  </resourceCopies>
+
+  <!-- optional libraries to load in GameActivity.java before libUE4.so -->
+  <soLoadLibrary>
+    <!-- Libraries have to be loaded in this orderd because they depend on eachother-->
+    <loadLibrary name="aws-c-common" failmsg="Did not load libaws-c-common library" />
+    <loadLibrary name="aws-checksums" failmsg="Did not load libaws-checksums library" />
+	<loadLibrary name="aws-c-event-stream" failmsg="Did not load libaws-c-event-stream library" />s
+    <loadLibrary name="aws-cpp-sdk-core" failmsg="Did not load libaws-cpp-sdk-core library" />
+  </soLoadLibrary>
+
+  <androidManifestUpdates>
+	  <!-- Added this because if you are using this plugin you are probably going to use the internet-->
+    <addPermission android:name="android.permission.INTERNET"/>
+  </androidManifestUpdates>

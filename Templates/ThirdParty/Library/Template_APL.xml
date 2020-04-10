@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <root xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- init section is always evaluated once per architecture -->
+  <!-- For documentation on what this file does see https://forums.unrealengine.com/development-discussion/android-development/76381-how-do-i-include-native-libraries-from-a-plugin -->
+  <!-- The basic idea is that this file tells what static libraries actually need to be copied into the final apk -->
+  <init>
+  </init>
+
+  <!-- optional files or directories to copy to Intermediate/Android/APK -->
+  <resourceCopies>
+    <log text="Copying lib{{context["aws-sdk-name"]}}.so"/>
+    <copyFile src="$S(PluginDir)/Android/$S(Architecture)/lib{{context["aws-sdk-name"]}}.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/lib{{context["aws-sdk-name"]}}.so" />
+  </resourceCopies>
+
+  <!-- optional libraries to load in GameActivity.java before libUE4.so -->
+  <soLoadLibrary>
+    <isArch arch="armeabi-v7a">
+      <log text="Load lib{{context["aws-sdk-name"]}} into memory"/>
+      <loadLibrary name="lib{{context["aws-sdk-name"]}}" failmsg="Failed to load lib{{context["aws-sdk-name"]}} library" />
+    </isArch>
+    <isArch arch="arm64-v8a">
+      <loadLibrary name="lib{{context["aws-sdk-name"]}}" failmsg="Failed to load lib{{context["aws-sdk-name"]}} library" />
+    </isArch>
+  </soLoadLibrary>
+</root>
