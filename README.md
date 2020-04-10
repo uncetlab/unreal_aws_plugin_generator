@@ -1,5 +1,5 @@
 # Unreal AWS Plugin Generator 
-This repo was created to help with generating the tedious parts of making unreal aws plugins. After compiling the aws c++ sdk, it is still a lot of repatitive work to correctly make the plugin structure for each of the modules. By automating this step, we can quickly make different types of plugins that use aws. Also, the sdk is huge so you should not just make one big plugin that links to all the compiled sdks as that would probably slow down the startup time of your game.  
+This repo was created to help with generating the tedious parts of unreal plugins. After compiling the aws c++ sdk, it is still a lot of repatitive work to correctly make the plugin structure for each of the modules. By automating this step, we can quickly make different types of plugins that use aws. Also, the sdk is huge so you should not just make one big plugin that links to all the compiled sdks as that would probably slow down the startup time of your game.  
 
 To understand the structure of the generated files you need to have some knowledge of how plugins work in Unreal. I recommend reading this page from Epic Games https://docs.unrealengine.com/en-US/Programming/Plugins/index.html. 
 
@@ -10,19 +10,19 @@ The generator will generate two kinds of modules:
 - ThirdPartyModules(TP):
     These are thin wrappers around the different aws sdks 
 - ClientModules
-    These can depend on multiple different TPModules
+    These can depend on multiple different TPModules.
     This is where you should write you logic and expose things to Blueprints
 
 TODO: Add more about this, a diagram, and talk about aws sdk dependencies on the basesdk 
 
 
 ## Get compiled aws sdks
-1. Download compiled sdks from public S3 bucket unreal-aws-compiled-sdks (TODO add instructions/probably a script to do this but basically tou can curl or use aws cli)
+1. Download compiled sdks from public S3 bucket: s3://unreal-aws-compiled-sdks (TODO add instructions/probably a script to do this but basically tou can curl or use aws cli)
 2. Compile it yourself (TODO link to blog about how to do this)
 
 
 ## Environment Set Up
-You Need Python 3.7 or greater cause I use that string interpolation.
+You Need Python 3.7 or greater cause I use string interpolation from this version.
 We are using Jinja2 to generate the files from templates. Even though it is a single dependency, I personally recommend using python virtual environments as it is a good habit. 
 
 pip install Jinja2
