@@ -2,6 +2,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import shutil 
 import argparse, sys, json
+import requests
 
 tmp_dir = '.tmp'
 aws_cpp_source = "H:/work/aws-sdk/aws-sdk-cpp"
@@ -324,6 +325,63 @@ def loadModulesFromFile(path):
 
     return loaded_json['client-modules']
 
+def printAwsSdks(settings):
+    #Hard coded to work for directories called aws-cpp-sdk-<sdkname>
+    #validate the binaries path is correct
+    for sub_dir in os.listdir(os.path.join(settings['binaries-path'])):        
+        if sub_dir[0:12] == "aws-cpp-sdk-":
+            print(sub_dir[12:])
+
+def downloadTPModule(sdks):
+    #First make sure they have a binaries folder saved
+    if not os.path.isfile(os.path.join('./Settings', 'localsettings.json')):
+        #We need to make a local settings file
+        #ask them for directory to put modules in
+        print("need settings")
+    
+    with open(os.path.join('./Settings', 'localsettings.json')) as fh:
+        loaded_settings = json.load(fh)
+
+    if not 'binaries-path' in loaded_settings:
+        #need to set the binaries path
+        print("Need binaries path") 
+
+    binariesPath = loaded_settings['binaries-path']
+
+    with open(os.path.join('./Settings', 'compiledsdkkeys.json')) as fh:
+        potiential_sdks = json.load(fh)
+    
+    for aws_sdk in sdks:
+        if aws_sdk in potiential_sdks:
+            print(f"downloading {aws_sdk}")
+            baseurl = f"https://unreal-aws-compiled-sdks.s3.amazonaws.com/aws-cpp-sdk-{aws_sdk}"
+
+            for key in potiential_sdks[aws_sdk]:
+                s3_url = f"{baseurl}/{key}"
+                #print(s3_url)
+                results = requests.get(s3_url)
+
+                #destination of downloaded file
+                top_folder = f"aws-cpp-sdk-{aws_sdk}"
+                if not os.path.isdir(os.path.join(binariesPath, top_folder)):
+                    os.mkdir(os.path.join(binariesPath, top_folder))
+
+                sub_folders = key.split('/')
+                file_name = sub_folders.pop()
+
+                #If the subfolders still has items then we need to make sure those path exisit on the file system in the build dir
+                checked_path = os.path.join(binariesPath, top_folder)
+                while not len(sub_folders) == 0:
+                    checked_path = os.path.join(checked_path, sub_folders.pop(0))
+                    if not os.path.isdir(checked_path):
+                        os.mkdir(checked_path)
+                        print(f"--- made the folder {checked_path}")
+
+
+                with open(os.path.join(binariesPath, top_folder, key), "wb") as fh:
+                    fh.write(results.content)
+                print(f">>> wrote {os.path.join(binariesPath, top_folder, key)} ")
+
 
 def main(): 
     context = {
@@ -412,22 +470,36 @@ def main():
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin", "make-tp-module"])
+    parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin", "make-tp-module", "list-aws-sdks", "download-sdks"])
     parser.add_argument("--pluginfile", nargs=1, help='location of JSON file that describes the plugin you want to create')
+    parser.add_argument("--sdks", nargs=1, help='comma seperated list of aws sdk names to download')
 
     arg = parser.parse_args(sys.argv[1:])
-    print(arg.command)
+    
 
-    if not arg.pluginfile == None:
-        client_mods  = loadModulesFromFile(arg.pluginfile[0])
-        context['client-modules'] = client_mods
+    if arg.command[0] == "list-aws-sdks":
+        print("hello")
+        printAwsSdks(context)
+
+    elif arg.command[0] == "download-sdks":
+        if arg.sdks is None:
+            print("You need to provide a comma seperated list of aws sdks to download as the --sdks flag. To see potiental names use list-aws-sdks command")
+
+        else:
+            sdks = arg.sdks[0].split(",")
+            downloadTPModule(sdks)
+
     else:
-        print("interactive mode")
+        if not arg.pluginfile == None:
+            client_mods  = loadModulesFromFile(arg.pluginfile[0])
+            context['client-modules'] = client_mods
+        else:
+            print("interactive mode")
 
-    for client in context['client-modules']:
-        rv = validateClientModule(client)
+        for client in context['client-modules']:
+            rv = validateClientModule(client)
 
-    CreatePlugin(context)
+        CreatePlugin(context)
 
 
 if __name__ == "__main__":
