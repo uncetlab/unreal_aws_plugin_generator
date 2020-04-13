@@ -42,7 +42,7 @@ Todo talk about structure of json objects and what they can modify
 
 client-module is json of the structure:  
 {  
-  * "client-module-name": str,  
+  "client-module-name": str,  
   * "sdk": str,  
   * "sh": str,  
   * "TPModules": [  
