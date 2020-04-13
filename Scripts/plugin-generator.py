@@ -333,20 +333,14 @@ def printAwsSdks(settings):
             print(sub_dir[12:])
 
 def downloadTPModule(sdks):
-    #First make sure they have a binaries folder saved
-    if not os.path.isfile(os.path.join('./Settings', 'localsettings.json')):
-        #We need to make a local settings file
-        #ask them for directory to put modules in
-        print("need settings")
-        return
-    
+    rv = checkSettings()
+
+    if not rv:
+        print("You have some invliad settings please set them correctly")
+        setSettings()
+
     with open(os.path.join('./Settings', 'localsettings.json')) as fh:
         loaded_settings = json.load(fh)
-
-    if not 'binaries-path' in loaded_settings:
-        #need to set the binaries path
-        print("Need binaries path")
-        return
 
     binariesPath = loaded_settings['binaries-path']
 
@@ -394,7 +388,82 @@ def downloadTPModule(sdks):
         else:
             print(f"{aws_sdk} is not a valid Third Party Module")
     
-                
+def setSettings():
+    #Will need slight refactor to work with multiple settings
+    inputmessage = ""
+    was_there_previous_setting = False
+
+    #First make sure they have a binaries folder saved
+    if not os.path.isfile(os.path.join('./Settings', 'localsettings.json')):
+        #We need to make a local settings file
+        #ask them for directory to put modules in
+        inputmessage = "Build Directory []: "
+        
+    else:
+        loaded_settings = {}
+        with open(os.path.join('./Settings', 'localsettings.json')) as fh:
+            try:
+                loaded_settings = json.load(fh)
+            except:
+                #probably empty file somehow
+                loaded_settings = {}
+
+        if not 'binaries-path' in loaded_settings:
+            #need to set the binaries path
+            inputmessage = "Build Directory []: "
+
+        else: 
+            inputmessage = f"Build Directory [{loaded_settings['binaries-path']}]: "
+            was_there_previous_setting = True
+
+    new_binaries_path = input(inputmessage)
+    has_path_been_confirmed = False
+
+    if was_there_previous_setting and new_binaries_path == "":
+        #they want to keep this setting
+        print(f"Keeping the previous path of {loaded_settings['binaries-path']}")
+        return
+
+    while not has_path_been_confirmed:
+        if not os.path.isdir(new_binaries_path):
+            print(f"{new_binaries_path} is not a valid path. Try Again.")
+            new_binaries_path = input(inputmessage)
+        else:
+            #breaks loop
+            has_path_been_confirmed = True
+
+    new_settings = {}
+    new_settings['binaries-path'] = new_binaries_path
+
+    with open(os.path.join('./Settings', "localsettings.json"), 'w') as fh2:
+        json.dump(new_settings, fh2)
+        print("Saved your new local settings")
+
+def checkSettings():
+    #First make sure they have a binaries folder saved
+    if not os.path.isfile(os.path.join('./Settings', 'localsettings.json')):
+        #We need to make a local settings file
+        #ask them for directory to put modules in
+        return False
+        
+    else:
+        with open(os.path.join('./Settings', 'localsettings.json')) as fh:
+            try:
+                loaded_settings = json.load(fh)
+            except:
+                #probably empty file or non-valid json 
+                return False
+
+        if not 'binaries-path' in loaded_settings:
+            #need to set the binaries path
+            return False
+
+        if not os.path.isdir(os.path.join(loaded_settings['binaries-path'])): 
+            #binaries path variable is not a valid directory
+            return False
+        
+        else:
+            return True
 
 
 def main(): 
@@ -501,6 +570,9 @@ def main():
         else:
             sdks = arg.sdks[0].split(",")
             downloadTPModule(sdks)
+
+    elif arg.command[0] == "set-settings":
+        setSettings()
 
     else:
         if not arg.pluginfile == None:
