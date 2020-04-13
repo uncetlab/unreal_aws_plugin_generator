@@ -5,7 +5,6 @@ import argparse, sys, json
 import requests
 
 tmp_dir = '.tmp'
-aws_cpp_source = "H:/work/aws-sdk/aws-sdk-cpp"
 output_dir = 'Output'
 
 
@@ -227,7 +226,10 @@ def moveBaseFiles(context):
     shutil.copyfile(icon_src, icon_dst)
 
 def copyWorktoOutput(context):
-    dst = os.path.join(".", output_dir, context['plugin-name'])
+    if not os.path.isdir(os.path.join(context['output-dir'])):
+        os.mkdir(os.path.join(context['output-dir']))
+
+    dst = os.path.join(context['output-dir'], context['plugin-name'])
     if os.path.isdir(dst):
         shutil.rmtree(dst)
 
@@ -381,14 +383,17 @@ def downloadTPModule(sdks):
     
 def setSettings():
     #Will need slight refactor to work with multiple settings
-    inputmessage = ""
-    was_there_previous_setting = False
+    build_message = ""
+    output_message = ""
+    was_there_previous_build_setting = False
+    was_there_previous_output_setting = False
 
     #First make sure they have a binaries folder saved
     if not os.path.isfile(os.path.join('./Settings', 'localsettings.json')):
         #We need to make a local settings file
         #ask them for directory to put modules in
-        inputmessage = "Build Directory []: "
+        build_message = "Build Directory []: "
+        output_message = "Output Directory []: "
         
     else:
         loaded_settings = {}
@@ -401,30 +406,55 @@ def setSettings():
 
         if not 'binaries-path' in loaded_settings:
             #need to set the binaries path
-            inputmessage = "Build Directory []: "
+            build_message = "Build Directory []: "
 
         else: 
-            inputmessage = f"Build Directory [{loaded_settings['binaries-path']}]: "
-            was_there_previous_setting = True
+            build_message = f"Build Directory [{loaded_settings['binaries-path']}]: "
+            was_there_previous_build_setting = True
 
-    new_binaries_path = input(inputmessage)
-    has_path_been_confirmed = False
+        if not 'output-dir' in loaded_settings:
+            #need to set the output dir
+            output_message = "Output Directory []: "
 
-    if was_there_previous_setting and new_binaries_path == "":
+        else:
+            output_message = f"Output Directory [{loaded_settings['output-dir']}]: "
+            was_there_previous_output_setting = True
+    
+    new_binaries_path = input(build_message)
+    has_build_path_been_confirmed = False
+
+    if was_there_previous_build_setting and new_binaries_path == "":
         #they want to keep this setting
         print(f"Keeping the previous path of {loaded_settings['binaries-path']}")
-        return
 
-    while not has_path_been_confirmed:
-        if not os.path.isdir(new_binaries_path):
-            print(f"{new_binaries_path} is not a valid path. Try Again.")
-            new_binaries_path = input(inputmessage)
-        else:
-            #breaks loop
-            has_path_been_confirmed = True
+    else:
+        while not has_build_path_been_confirmed:
+            if not os.path.isdir(new_binaries_path):
+                print(f"{new_binaries_path} is not a valid path. Try Again.")
+                new_binaries_path = input(build_message)
+            else:
+                #breaks loop
+                has_build_path_been_confirmed = True
+
+    new_output_dir = input(output_message)
+    has_output_dir_been_confirmed = False
+
+    if was_there_previous_output_setting and new_output_dir == "":
+        print(f"keeping the previous output dir of {loaded_settings['output-dir']}")
+
+    else:
+        while not has_output_dir_been_confirmed:
+            if not os.path.isdir(new_output_dir):
+                print(f"{new_output_dir} is not a valid dir. Try Again. ")
+                new_output_dir = input(output_message)
+            else:
+                has_output_dir_been_confirmed = True 
+
+
 
     new_settings = {}
     new_settings['binaries-path'] = new_binaries_path
+    new_settings['output-dir'] = new_output_dir
 
     with open(os.path.join('./Settings', "localsettings.json"), 'w') as fh2:
         json.dump(new_settings, fh2)
@@ -449,10 +479,17 @@ def checkSettings():
             #need to set the binaries path
             return False
 
-        if not os.path.isdir(os.path.join(loaded_settings['binaries-path'])): 
+        elif not os.path.isdir(os.path.join(loaded_settings['binaries-path'])): 
             #binaries path variable is not a valid directory
             return False
         
+        elif not 'output-dir' in loaded_settings:
+            return False
+
+        elif not os.path.isdir(os.path.join(loaded_settings['output-dir'])): 
+            #binaries path variable is not a valid directory
+            return False
+
         else:
             return True
 
@@ -716,6 +753,7 @@ def main():
             settings = json.load(fh)
 
         context['binaries-path'] = settings['binaries-path']
+        context['output-dir'] = settings['output-dir']
 
         CreatePlugin(context)
 
