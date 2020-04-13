@@ -3,9 +3,6 @@ This repo was created to help with generating Unreal Plugins that link to the co
 
 To understand the structure of the generated files you need to have some knowledge of how plugins work in Unreal. I recommend reading this page from Epic Games https://docs.unrealengine.com/en-US/Programming/Plugins/index.html. 
 
-TLDR:
-A plugin consists of atleast one module. A module can depend on other modules.
-
 
 # What exactly is created?
 The generator will generate a plugin with two kinds of modules: 
@@ -27,13 +24,18 @@ We are using Jinja2 to generate the files from templates and requests to downloa
 ```pip install requests```
 
 
-# What sdk are available? 
+## Settings
+Before you can complete your first commands, you will be required to initialize some settings  
+- Binaries_Directory: This will be the directory the scripts use to look for the compiled sdks
+
+
+# What sdk are available?
+There are currently 220 available sdks so I can not include them all here. To check them look in Settings/sdks.json or run the following command
 ```python Scripts/generate.py list-aws-sdks```
 
 ## Get the compiled aws sdks
 1. Download compiled sdks using ```download-sdks``` command 
 2. Compile it yourself (TODO link to blog about how to do this)
-
 
 
 ## Generating a plugin
@@ -42,8 +44,24 @@ From the base directory run:
 ```python Scripts/generate.py make-plugin```
 
 
-## Settings
-Todo talk about structure of json objects and what they can modify
+
+
+## Plugin From a file
+You can pass a file representing your plugin with the ```--pluginfile``` flag. Below is a description of how that file should look.  
+
+Plugin is a json of the structure:
+```json
+{
+    "plugin-name": "",
+    "description": "",
+    "plugin-prefix": "",
+    "sdk-prefix": "",
+    "tp-module-suffix": "",
+    "client-modules": [
+        "ClientModuleJsons"
+    ]
+}
+```
 
 client-module is json of the structure:  
 ```json 
@@ -66,7 +84,7 @@ TP-module is a json of the structure:
 ```
 
 ## Example of an actual implementation 
-https://github.com/uncetlab/unreal_aws_example_project
+https://github.com/uncetlab/unreal_aws_example_project  
 TODO: link to blog about how I have implenented some of the clients
 
 
