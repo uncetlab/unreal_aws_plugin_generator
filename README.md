@@ -41,14 +41,14 @@ From the base directory run:
 Todo talk about structure of json objects and what they can modify
 
 client-module is json of the structure:  
-```{  
-  "client-module-name": str,  
-  "sdk": str,  
-  "sh": str,  
-  "TPModules": [  
-    {TPModuleJsons}  
-  ]  
-}```
+    {  
+      "client-module-name": str,  
+      "sdk": str,  
+      "sh": str,  
+      "TPModules": [  
+        {TPModuleJsons}  
+      ]  
+    }
 
 TP-module is a json of the structure:
 {
