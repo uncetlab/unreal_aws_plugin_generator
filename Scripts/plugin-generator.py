@@ -338,13 +338,15 @@ def downloadTPModule(sdks):
         #We need to make a local settings file
         #ask them for directory to put modules in
         print("need settings")
+        return
     
     with open(os.path.join('./Settings', 'localsettings.json')) as fh:
         loaded_settings = json.load(fh)
 
     if not 'binaries-path' in loaded_settings:
         #need to set the binaries path
-        print("Need binaries path") 
+        print("Need binaries path")
+        return
 
     binariesPath = loaded_settings['binaries-path']
 
@@ -353,13 +355,24 @@ def downloadTPModule(sdks):
     
     for aws_sdk in sdks:
         if aws_sdk in potiential_sdks:
-            print(f"downloading {aws_sdk}")
+            #Check if they already have this sdk in the binaries path
+            if os.path.isdir(os.path.join(binariesPath, f"aws-cpp-sdk-{aws_sdk}")):
+                replace_sdk = input(f"There is already a {aws_sdk} in your binaries folder. Would you like to replace it? (Yes/No)  ")
+                if replace_sdk == "No":
+                    print(f"Skipping {aws_sdk}")
+                    continue                
+
+            print(f"downloading {aws_sdk} from S3... It will take a minute")
             baseurl = f"https://unreal-aws-compiled-sdks.s3.amazonaws.com/aws-cpp-sdk-{aws_sdk}"
 
             for key in potiential_sdks[aws_sdk]:
                 s3_url = f"{baseurl}/{key}"
-                #print(s3_url)
                 results = requests.get(s3_url)
+
+                if not results:
+                    #Need better error handling when a download attempt fails
+                    print(f"Failed to download {s3_url}")
+                    continue
 
                 #destination of downloaded file
                 top_folder = f"aws-cpp-sdk-{aws_sdk}"
@@ -375,12 +388,13 @@ def downloadTPModule(sdks):
                     checked_path = os.path.join(checked_path, sub_folders.pop(0))
                     if not os.path.isdir(checked_path):
                         os.mkdir(checked_path)
-                        print(f"--- made the folder {checked_path}")
-
-
+                       
                 with open(os.path.join(binariesPath, top_folder, key), "wb") as fh:
                     fh.write(results.content)
-                print(f">>> wrote {os.path.join(binariesPath, top_folder, key)} ")
+        else:
+            print(f"{aws_sdk} is not a valid Third Party Module")
+    
+                
 
 
 def main(): 
@@ -478,7 +492,6 @@ def main():
     
 
     if arg.command[0] == "list-aws-sdks":
-        print("hello")
         printAwsSdks(context)
 
     elif arg.command[0] == "download-sdks":
