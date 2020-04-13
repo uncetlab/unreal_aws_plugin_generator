@@ -10,11 +10,11 @@ A plugin consists of atleast one module. A module can depend on other modules.
 # What exactly is created?
 The generator will generate a plugin with two kinds of modules: 
 - ThirdPartyModules(TP):
-    These are thin wrappers around the different aws sdks
-    For example: S3TPModule would be a module that contains the compiled S3 sdk that other modules can depend on to use that sdk. 
+    -- These are thin wrappers around the different aws sdks
+    -- For example: S3TPModule would be a module that contains the compiled S3 sdk that other modules can depend on to use that sdk. 
 - ClientModules
-    These can depend on multiple different TPModules.
-    This is where you should write you logic and expose things to Blueprints
+    -- These can depend on multiple different TPModules.
+    -- This is where you should write you logic and expose things to Blueprints
 
 TODO: Add more about this, a diagram, and talk about aws sdk dependencies on the basesdk 
 
@@ -25,15 +25,16 @@ TODO: Add more about this, a diagram, and talk about aws sdk dependencies on the
 
 
 ## Environment Set Up
-You Need Python 3.7 or greater cause I use string interpolation from python 3.7.
-We are using Jinja2 to generate the files from templates. Even though it is a single dependency, I personally recommend using python virtual environments as it is a good habit. 
+You need Python 3.7 or higher.
+We are using Jinja2 to generate the files from templates and requests to download the files. Despite there not being many dependencies, I personally recommend using python virtual environments as it is a good habit. 
 
-pip install Jinja2
+```pip install Jinja2```
+```pip install requests```
 
 ## Generating a plugin
 From the base directory run:
 
-python Scripts/generate.py make-plugin --pluginfile <path-to-file>
+```python Scripts/generate.py make-plugin --pluginfile <path-to-file>```
 
 
 ## Settings
