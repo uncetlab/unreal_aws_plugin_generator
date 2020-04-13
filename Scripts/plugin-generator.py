@@ -19,7 +19,6 @@ def createtempdirectory():
     
     os.mkdir(os.path.join(".", tmp_dir))
 
-
 def makeSkeletonFolderStruct(context):
     plugin_name = context['plugin-name']
    
@@ -58,7 +57,6 @@ def makeSkeletonFolderStruct(context):
                 for SubPlatform in platform['Sub-Platforms']:
                     os.mkdir(os.path.join(tp_path, platform['Platform'], SubPlatform))
     
-
 def copyFilesFromBuild(context):
     #We need to copy the binary and header files of the actual aws sdk into the TP module folders
     plugin_name = context['plugin-name']
@@ -116,7 +114,6 @@ def copyFilesFromBuild(context):
                         print(f"Copying {src} to {dst}")
                         shutil.copyfile(src, dst)
 
-
 def genetateTPTemplates(context):
     #We need to generate the template files for the third party modules
     plugin_name = context['plugin-name']
@@ -147,7 +144,6 @@ def genetateTPTemplates(context):
                 with open(template_dst, 'w') as fh:
                     fh.write(output)
                 
-
 def makeTPModules(context):
     copyFilesFromBuild(context)
 
@@ -230,7 +226,6 @@ def moveBaseFiles(context):
     print(f"copying the icon from {icon_src} to {icon_dst}")
     shutil.copyfile(icon_src, icon_dst)
 
-
 def copyWorktoOutput(context):
     dst = os.path.join(".", output_dir, context['plugin-name'])
     if os.path.isdir(dst):
@@ -239,7 +234,6 @@ def copyWorktoOutput(context):
     src = os.path.join(".", tmp_dir, context['plugin-name'])
 
     shutil.copytree(src, dst)
-
 
 def CreatePlugin(context):
     template_dir = './Templates'
@@ -270,8 +264,6 @@ def CreatePlugin(context):
     #Step 8
     deletetempdirectory()
 
-
-    
 def validateTPModule(tp_module):
     if not type(tp_module) is dict:
         return False
@@ -287,7 +279,6 @@ def validateTPModule(tp_module):
         return False
 
     return True
-
 
 def validateClientModule(client_module):
     if not type(client_module) is dict:
@@ -465,15 +456,148 @@ def checkSettings():
         else:
             return True
 
+def interactiveTPModule():
+    aws_sdk = input("What aws sdk would you like to use? ")
+    while not type(aws_sdk) is str:
+        print("Name needs to be a string. try again.")
+        aws_sdk = input("What aws sdk would you like to use? ")
+
+    with open(os.path.join("./Settings", "sdks.json")) as fh:
+        valid_sdks = json.load(fh)
+
+    has_confirmed_sdk = False
+
+    while not has_confirmed_sdk:
+        if not aws_sdk in valid_sdks['names']:
+            print(f"{aws_sdk} is not a valid sdk. try again.")
+            aws_sdk = input("What aws sdk would you like to use? ")
+        else:
+            has_confirmed_sdk = True
+    
+    ##Assume setting was checked in previous calls
+    with open(os.path.join('./Settings', 'localsettings.json')) as fh:
+        try:
+            loaded_settings = json.load(fh)
+        except:
+            #probably empty file somehow BAD
+            loaded_settings = {}
+    
+    if not os.path.isdir(os.path.join(loaded_settings["binaries-path"],f"aws-cpp-sdk-{aws_sdk}")):
+        download_sdk = input("Looks like your binaries folder is missing this sdk. Would you like to download it? (Yes/No): ")
+        is_valid_answer = False
+
+        while not is_valid_answer:
+            if download_sdk == "No":
+                print("Without the correct compiled libraries you can not create this TP Modules")
+                return False
+
+            elif download_sdk == "Yes":
+                #Download the module
+                downloadTPModule([aws_sdk])
+                is_valid_answer = True
+
+            else:
+                print("please answer either Yes or No")
+                download_sdk = input("Looks like your binaries folder is missing this sdk. Would you like to download it? (Yes/No): ")
+
+    rv = {}
+
+    rv['aws-sdk-name'] = f"aws-cpp-sdk-{aws_sdk}"
+    rv['TPModuleName'] = valid_sdks['TPModuleNames'][aws_sdk]
+
+    return rv
+    
+def interactiveClientModule():
+    client_mod_name = input("What is the name of this client module: ")
+    while not type(client_mod_name) is str:
+        print("Name needs to be a string. try again.")
+        client_mod_name = input("What is the name of this client module: ")
+
+    finished_linking_TPModules = False
+    tp_modules = []
+
+    while not finished_linking_TPModules:
+        is_valid_response = False
+        while not is_valid_response:
+            another_TP = input(f"Would you like to link a TP Module to {client_mod_name}? (Yes/No) ")
+
+            if another_TP == "No":
+                finished_linking_TPModules = True
+                is_valid_response = True
+
+            elif another_TP == "Yes":
+                tp_module = interactiveTPModule()
+                if not tp_module:
+                    #rv was false so it was not a valid TP module
+                    print("")
+                else:
+                    tp_modules.append(tp_module)
+                is_valid_response = True
+
+            else:
+                print("Please respond with either Yes or No.")
+
+    if len(tp_modules) == 0:
+        #Did not link any aws sdks so not a valid client module
+        return False
+
+    rv = {}
+    rv['client-module-name'] = client_mod_name
+    rv['TPModules'] = tp_modules
+
+    return rv
+
+def interactivePlugin():
+    plugin_name = input("What would you like the name of your plugin to be? ")
+    
+    while not type(plugin_name) is str:
+        print("Name needs to be a string. try again.")
+        plugin_name = input("What would you like the name of your plugin to be? ")
+
+    plugin_description = input("Description of plugin: ")
+
+    while not type(plugin_description) is str:
+        print("Description needs to be a string. try again.")
+        plugin_description = input("Description of plugin: ")
+
+    finished_making_ClientModules = False
+    client_modules = []
+
+    while not finished_making_ClientModules:
+        is_valid_response = False
+        while not is_valid_response:
+            another_module = input(f"Would you like to make a client module for {plugin_name}? (Yes/No) ")
+
+            if another_module == "No":
+                finished_making_ClientModules = True
+                is_valid_response = True
+
+            elif another_module == "Yes":
+                client_module = interactiveClientModule()
+                if not client_module:
+                    #rv was false so it was not a valid TP module
+                    print("")
+                else:
+                    client_modules.append(client_module)
+                is_valid_response = True
+
+            else:
+                print("Please respond with either Yes or No.")
+    
+    rv = {}
+    rv['plugin-name'] = plugin_name
+    rv['description'] = plugin_description
+    rv['client-modules'] = client_modules
+
+    return rv
+
+
 
 def main(): 
     context = {
-        'plugin-name': 'AwsDemo23',
-        'description': 'A demo render of the aws plugin',
         'plugin-prefix': 'AWS',
         'sdk-prefix': 'aws-cpp-sdk-',
         'tp-module-suffix': 'TPModule',
-        'binaries-path': 'H:/tmp/plugin-cleanup/CompiledSDK',
         'supported_platforms': [
             {
                 'Platform':'Android',  
@@ -553,7 +677,7 @@ def main():
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin", "make-tp-module", "list-aws-sdks", "download-sdks", "set-settings"])
+    parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin",  "list-aws-sdks", "download-sdks", "set-settings"])
     parser.add_argument("--pluginfile", nargs=1, help='location of JSON file that describes the plugin you want to create')
     parser.add_argument("--sdks", nargs=1, help='comma seperated list of aws sdk names to download')
 
@@ -574,15 +698,24 @@ def main():
     elif arg.command[0] == "set-settings":
         setSettings()
 
-    else:
+    elif arg.command[0] == "make-plugin":
         if not arg.pluginfile == None:
             client_mods  = loadModulesFromFile(arg.pluginfile[0])
             context['client-modules'] = client_mods
         else:
-            print("interactive mode")
+            info = interactivePlugin()
 
-        for client in context['client-modules']:
-            rv = validateClientModule(client)
+            context['plugin-name'] = info['plugin-name']
+            context['description'] = info['description']
+            context['client-modules'] = info['client-modules']
+
+        #for client in context['client-modules']:
+        #    rv = validateClientModule(client)
+
+        with open(os.path.join("./Settings", "localsettings.json")) as fh:
+            settings = json.load(fh)
+
+        context['binaries-path'] = settings['binaries-path']
 
         CreatePlugin(context)
 

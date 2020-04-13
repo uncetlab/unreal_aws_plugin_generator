@@ -2,8 +2,6 @@
     "client-modules":[
     {   
         "client-module-name": "AWSS3",
-        "sdk": "s3",
-        "sh": "s3",
         "TPModules": [
             {
                 "aws-sdk-name": "aws-cpp-sdk-s3",
