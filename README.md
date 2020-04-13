@@ -26,11 +26,11 @@ We are using Jinja2 to generate the files from templates and requests to downloa
 
 ## Settings
 Before you can complete your first commands, you will be required to initialize some settings  
-- Binaries_Directory: This will be the directory the scripts use to look for the compiled sdks
+- **Binaries_Directory**: This will be the directory the scripts use to look for the compiled sdks
 
 
 # What sdk are available?
-There are currently 220 available sdks so I can not include them all here. To check them look in Settings/sdks.json or run the following command
+There are currently 220 available sdks so I can not include them all here. To check them look in Settings/sdks.json or run the following command  
 ```python Scripts/generate.py list-aws-sdks```
 
 ## Get the compiled aws sdks
