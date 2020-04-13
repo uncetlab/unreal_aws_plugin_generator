@@ -54,9 +54,6 @@ Plugin is a json of the structure:
 {
     "plugin-name": "",
     "description": "",
-    "plugin-prefix": "",
-    "sdk-prefix": "",
-    "tp-module-suffix": "",
     "client-modules": [
         "ClientModuleJsons"
     ]
@@ -66,9 +63,7 @@ Plugin is a json of the structure:
 client-module is json of the structure:  
 ```json 
 {  
-  "client-module-name": "",  
-  "sdk": "",  
-  "sh": "",  
+  "client-module-name": "",   
   "TPModules": [  
     "TPModuleJsons"  
   ]  
