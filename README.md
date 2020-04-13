@@ -16,6 +16,7 @@ The generator will generate a plugin with two kinds of modules:
 TODO: Add more about this, a diagram, and talk about aws sdk dependencies on the basesdk 
 
 
+
 ## Environment Set Up
 You need Python 3.7 or higher.  
 We are using Jinja2 to generate the files from templates and requests to download the files. Despite there not being many dependencies, I personally recommend using python virtual environments as it is a good habit. 
