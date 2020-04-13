@@ -28,27 +28,27 @@ TODO: Add more about this, a diagram, and talk about aws sdk dependencies on the
 You need Python 3.7 or higher.
 We are using Jinja2 to generate the files from templates and requests to download the files. Despite there not being many dependencies, I personally recommend using python virtual environments as it is a good habit. 
 
-```pip install Jinja2```
+```pip install Jinja2```  
 ```pip install requests```
 
 ## Generating a plugin
 From the base directory run:
 
-```python Scripts/generate.py make-plugin --pluginfile <path-to-file>```
+```python Scripts/generate.py make-plugin```
 
 
 ## Settings
 Todo talk about structure of json objects and what they can modify
 
-client-module is json of the structure:
-{
-    "client-module-name": str,
-    "sdk": str,
-    "sh": str,
-    "TPModules": [
-        <TPModuleJsons>
-    ]
-}
+client-module is json of the structure:  
+{  
+    "client-module-name": str,  
+    "sdk": str,  
+    "sh": str,  
+    "TPModules": [  
+        <TPModuleJsons>  
+    ]  
+}  
 
 TP-module is a json of the structure:
 {
