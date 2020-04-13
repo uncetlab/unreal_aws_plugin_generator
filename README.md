@@ -19,17 +19,22 @@ The generator will generate a plugin with two kinds of modules:
 TODO: Add more about this, a diagram, and talk about aws sdk dependencies on the basesdk 
 
 
-## Get the compiled aws sdks
-1. Download compiled sdks from public S3 bucket using ```download-sdks``` command 
-2. Compile it yourself (TODO link to blog about how to do this)
-
-
 ## Environment Set Up
 You need Python 3.7 or higher.
 We are using Jinja2 to generate the files from templates and requests to download the files. Despite there not being many dependencies, I personally recommend using python virtual environments as it is a good habit. 
 
 ```pip install Jinja2```  
 ```pip install requests```
+
+
+# What sdk are available? 
+```python Scripts/generate.py list-aws-sdks```
+
+## Get the compiled aws sdks
+1. Download compiled sdks using ```download-sdks``` command 
+2. Compile it yourself (TODO link to blog about how to do this)
+
+
 
 ## Generating a plugin
 From the base directory run:
@@ -55,7 +60,7 @@ client-module is json of the structure:
 TP-module is a json of the structure:
 ```json
 {
-    "aws-sdk-name": "", TODO write code to check this
+    "aws-sdk-name": "", 
     "TPModuleName": ""
 }
 ```
@@ -65,16 +70,7 @@ https://github.com/uncetlab/unreal_aws_example_project
 TODO: link to blog about how I have implenented some of the clients
 
 
-### Plugin Creation Steps 
-1. Create tmp working directory
-2. Create Skeleton folder structure in the working dir
-3. Make the All the TP Modules from templates
-4. Make the client Modules from templates
-5. Make the Plugin from templates 
-6. Make the Base Module from templates
-7. Move files to Output directory and clean up 
 
-TODO: rename files to be actually good names
 
 
 
