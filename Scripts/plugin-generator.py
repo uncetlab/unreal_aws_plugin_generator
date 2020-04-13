@@ -484,7 +484,7 @@ def main():
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin", "make-tp-module", "list-aws-sdks", "download-sdks"])
+    parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin", "make-tp-module", "list-aws-sdks", "download-sdks", "set-settings"])
     parser.add_argument("--pluginfile", nargs=1, help='location of JSON file that describes the plugin you want to create')
     parser.add_argument("--sdks", nargs=1, help='comma seperated list of aws sdk names to download')
 

@@ -26,7 +26,10 @@ We are using Jinja2 to generate the files from templates and requests to downloa
 
 ## Settings
 Before you can complete your first commands, you will be required to initialize some settings  
-- **Binaries_Directory**: This will be the directory the scripts use to look for the compiled sdks
+- **Binaries_Directory**: This will be the directory the scripts use to look for the compiled sdks  
+
+You can change these settings anytime by running  
+```python Scripts/generate.py settings```
 
 
 # What sdk are available?
@@ -42,9 +45,6 @@ There are currently 220 available sdks so I can not include them all here. To ch
 From the base directory run:
 
 ```python Scripts/generate.py make-plugin```
-
-
-
 
 ## Plugin From a file
 You can pass a file representing your plugin with the ```--pluginfile``` flag. Below is a description of how that file should look.  
