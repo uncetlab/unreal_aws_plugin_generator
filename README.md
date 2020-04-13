@@ -42,21 +42,23 @@ Todo talk about structure of json objects and what they can modify
 
 client-module is json of the structure:  
 ```json 
-    {  
-      "client-module-name": "",  
-      "sdk": "",  
-      "sh": "",  
-      "TPModules": [  
-        "TPModuleJsons"  
-      ]  
-    }
+{  
+  "client-module-name": "",  
+  "sdk": "",  
+  "sh": "",  
+  "TPModules": [  
+    "TPModuleJsons"  
+  ]  
+}
 ```
 
 TP-module is a json of the structure:
+```json
 {
-    "aws-sdk-name": str (must be valid aws sdk name), TODO write code to check this
-    "TPModuleName": str
+    "aws-sdk-name": "", TODO write code to check this
+    "TPModuleName": ""
 }
+```
 
 ## Example of an actual implementation 
 https://github.com/uncetlab/unreal_aws_example_project
