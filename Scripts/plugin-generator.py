@@ -3,6 +3,7 @@ import os
 import shutil 
 import argparse, sys, json
 import requests
+from utils import printProgressBar
 
 tmp_dir = '.tmp'
 
@@ -300,6 +301,9 @@ def downloadTPModule(sdks):
             print(f"downloading {aws_sdk} from S3... It will take a minute")
             baseurl = f"https://unreal-aws-compiled-sdks.s3.amazonaws.com/aws-cpp-sdk-{aws_sdk}"
 
+            total_keys = len(potiential_sdks[aws_sdk])
+            indx=0
+            printProgressBar(indx, total_keys, prefix=f"{aws_sdk} Progress", length=50)
             for key in potiential_sdks[aws_sdk]:
                 s3_url = f"{baseurl}/{key}"
                 results = requests.get(s3_url)
@@ -326,6 +330,13 @@ def downloadTPModule(sdks):
                        
                 with open(os.path.join(binariesPath, top_folder, key), "wb") as fh:
                     fh.write(results.content)
+
+                printProgressBar(indx, total_keys, prefix=f"{aws_sdk} Progress", length=50)
+                indx = indx+1
+
+            printProgressBar(total_keys, total_keys, prefix=f"{aws_sdk} Progress", length=50)
+            print("")
+            print(f"Finished downloading {aws_sdk}")
         else:
             print(f"{aws_sdk} is not a valid Third Party Module")
     
