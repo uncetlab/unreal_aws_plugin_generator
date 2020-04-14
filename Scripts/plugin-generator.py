@@ -266,58 +266,6 @@ def CreatePlugin(context):
     #Step 8
     deletetempdirectory()
 
-def validateTPModule(tp_module):
-    if not type(tp_module) is dict:
-        return False
-    
-    #TODO
-    #Make a function to check actually valid aws-sdk-name
-    if not "aws-sdk-name" in tp_module or not type(tp_module['aws-sdk-name']) is str:
-        print(f"Not valid aws-sdk-name")
-        return False
-    
-    if not "TPModuleName" in tp_module or not type(tp_module['TPModuleName']) is str:
-        print(f"Not valid TPModuleName")
-        return False
-
-    return True
-
-def validateClientModule(client_module):
-    if not type(client_module) is dict:
-        return False
-
-    if not "client-module-name" in client_module or not type(client_module['client-module-name']) is str:
-        print(f"Not valid client-module-name")
-        return False
-
-    if not "sdk" in client_module or not type(client_module['sdk']) is str:
-        print(f"Not valid sdk")
-        return False
-
-    if not "sh" in client_module or not type(client_module['sh']) is str:
-        print(f"Not valid sh")
-        return False
-
-    if not 'TPModules' in client_module or not type(client_module['TPModules']) is list:
-        print(f"Not valid TP Modules")
-        return False
-
-    for tp_mod in client_module['TPModules']:
-        if not validateTPModule(tp_mod):
-            return False
-
-    return True
-
-def loadModulesFromFile(path):
-    if not os.path.isfile(os.path.join(path)) or not path.endswith(".json"):
-        print("not a valid path")
-        return False
-
-    with open(os.path.join(path)) as fh:
-        loaded_json = json.load(fh)
-
-    return loaded_json['client-modules']
-
 def printAwsSdks(settings):
     #Hard coded to work for directories called aws-cpp-sdk-<sdkname>
     #validate the binaries path is correct
@@ -425,6 +373,7 @@ def setSettings():
 
     if was_there_previous_build_setting and new_binaries_path == "":
         #they want to keep this setting
+        new_binaries_path = loaded_settings['binaries-path']
         print(f"Keeping the previous path of {loaded_settings['binaries-path']}")
 
     else:
@@ -440,6 +389,7 @@ def setSettings():
     has_output_dir_been_confirmed = False
 
     if was_there_previous_output_setting and new_output_dir == "":
+        loaded_settings['binaries-path'] = loaded_settings['output-dir']
         print(f"keeping the previous output dir of {loaded_settings['output-dir']}")
 
     else:
@@ -454,7 +404,7 @@ def setSettings():
 
     new_settings = {}
     new_settings['binaries-path'] = new_binaries_path
-    new_settings['output-dir'] = new_output_dir
+    new_settings['output-dir'] = loaded_settings['binaries-path']
 
     with open(os.path.join('./Settings', "localsettings.json"), 'w') as fh2:
         json.dump(new_settings, fh2)
@@ -493,6 +443,26 @@ def checkSettings():
         else:
             return True
 
+def interactiveTPDownload(settings, aws_sdk):
+    ## Download the compiled aws sdk if it is missing 
+    if not os.path.isdir(os.path.join(settings["binaries-path"],f"aws-cpp-sdk-{aws_sdk}")):
+        download_sdk = input(f"Looks like your binaries folder is missing the {aws_sdk} sdk. Would you like to download it? (Yes/No): ")
+        is_valid_answer = False
+
+        while not is_valid_answer:
+            if download_sdk.lower() == "no":
+                print("Without the correct compiled binaries you can not create this TP Modules")
+                return False
+
+            elif download_sdk.lower() == "yes":
+                #Download the module
+                downloadTPModule([aws_sdk])
+                is_valid_answer = True
+
+            else:
+                print("please answer either Yes or No")
+                download_sdk = input("Looks like your binaries folder is missing this sdk. Would you like to download it? (Yes/No): ")
+
 def interactiveTPModule():
     aws_sdk = input("What aws sdk would you like to use? ")
     while not type(aws_sdk) is str:
@@ -519,23 +489,7 @@ def interactiveTPModule():
             #probably empty file somehow BAD
             loaded_settings = {}
     
-    if not os.path.isdir(os.path.join(loaded_settings["binaries-path"],f"aws-cpp-sdk-{aws_sdk}")):
-        download_sdk = input("Looks like your binaries folder is missing this sdk. Would you like to download it? (Yes/No): ")
-        is_valid_answer = False
-
-        while not is_valid_answer:
-            if download_sdk == "No":
-                print("Without the correct compiled libraries you can not create this TP Modules")
-                return False
-
-            elif download_sdk == "Yes":
-                #Download the module
-                downloadTPModule([aws_sdk])
-                is_valid_answer = True
-
-            else:
-                print("please answer either Yes or No")
-                download_sdk = input("Looks like your binaries folder is missing this sdk. Would you like to download it? (Yes/No): ")
+    interactiveTPDownload(loaded_settings, aws_sdk)
 
     rv = {}
 
@@ -552,17 +506,19 @@ def interactiveClientModule():
 
     finished_linking_TPModules = False
     tp_modules = []
+    #first time the grammer is a little different
+    tp_message = f"Would you like to link a TP Module to {client_mod_name}? (Yes/No) "
 
     while not finished_linking_TPModules:
         is_valid_response = False
         while not is_valid_response:
-            another_TP = input(f"Would you like to link a TP Module to {client_mod_name}? (Yes/No) ")
+            another_TP = input(tp_message)
 
-            if another_TP == "No":
+            if another_TP.lower() == "no":
                 finished_linking_TPModules = True
                 is_valid_response = True
 
-            elif another_TP == "Yes":
+            elif another_TP.lower() == "yes":
                 tp_module = interactiveTPModule()
                 if not tp_module:
                     #rv was false so it was not a valid TP module
@@ -573,6 +529,8 @@ def interactiveClientModule():
 
             else:
                 print("Please respond with either Yes or No.")
+            #Change the grammer slightly for not first tp module
+            tp_message = f"Would you like to link another TP Module to {client_mod_name}? (Yes/No) "
 
     if len(tp_modules) == 0:
         #Did not link any aws sdks so not a valid client module
@@ -599,11 +557,13 @@ def interactivePlugin():
 
     finished_making_ClientModules = False
     client_modules = []
+    #Grammer is a little different for the first message
+    client_message = f"Would you like to make a client module for {plugin_name}? (Yes/No) "
 
     while not finished_making_ClientModules:
         is_valid_response = False
         while not is_valid_response:
-            another_module = input(f"Would you like to make a client module for {plugin_name}? (Yes/No) ")
+            another_module = input(client_message)
 
             if another_module == "No":
                 finished_making_ClientModules = True
@@ -620,6 +580,8 @@ def interactivePlugin():
 
             else:
                 print("Please respond with either Yes or No.")
+
+        client_message = f"Would you like to make another client module for {plugin_name}? (Yes/No) "
     
     rv = {}
     rv['plugin-name'] = plugin_name
@@ -628,9 +590,112 @@ def interactivePlugin():
 
     return rv
 
+def loadPluginFromFile(path):
+    if not os.path.isfile(os.path.join(path)) or not path.endswith(".json"):
+        print(f"{path} is not a valid json")
+        return False
 
+    with open(os.path.join(path)) as fh:
+        loaded_plugin = json.load(fh)
+
+    rv = validatePlugin(loaded_plugin)
+
+    if type(rv) is str:
+        print(rv)
+        return False
+
+    with open(os.path.join("./Settings", "sdks.json")) as fh:
+        valid_sdks = json.load(fh)
+    
+
+    for client in loaded_plugin['client-modules']:
+        new_tp_list = []
+        for tp in client['TPModules']:
+            with open(os.path.join('./Settings', 'localsettings.json')) as fh:
+                loaded_settings = json.load(fh)
+
+            interactiveTPDownload(loaded_settings, tp['aws-sdk-name'] )
+
+            new_tp = {}
+            new_tp['aws-sdk-name'] = f"aws-cpp-sdk-{tp['aws-sdk-name']}"
+            new_tp['TPModuleName'] = valid_sdks['TPModuleNames'][tp['aws-sdk-name']]
+            new_tp_list.append(new_tp)
+
+            #check that they have the TP Modules in build folder
+           
+
+        
+        client['TPModules'] = new_tp_list
+        
+
+
+    return loaded_plugin
+
+def validateTPModule(tp_module):
+    if not type(tp_module) is dict:
+        return False
+
+    if not "aws-sdk-name" in tp_module:
+        return False
+    if not type(tp_module['aws-sdk-name']) is str:
+        return " name was not a string"
+   
+    with open(os.path.join("./Settings", "sdks.json")) as fh:
+        valid_sdks = json.load(fh)
+
+    if not tp_module['aws-sdk-name'] in valid_sdks['names']:
+        return " is not a valid aws sdk"
+
+    return True
+
+def validateClientModule(client_module):
+    if not type(client_module) is dict:
+        return False
+
+    if not "client-module-name" in client_module or not type(client_module['client-module-name']) is str:
+        return False
+
+    if not 'TPModules' in client_module or not type(client_module['TPModules']) is list:
+        return f"{client_module['client-module-name']} did not have valid list of TP Modules"
+
+    if len(client_module['TPModules']) == 0:
+        return f"{client_module['client-module-name']} did not contain any TP Modules"
+
+    for tp_mod in client_module['TPModules']:
+        rv = validateTPModule(tp_mod)
+        if type(rv) is str:
+            return f"In {client_module['client-module-name']}: {tp_mod['aws-sdk-name']}{rv}" 
+
+        if not rv:
+            return f"One of the TP Modules in {client_module['client-module-name']} was not a valid TPModule json"
+
+    return True
+
+def validatePlugin(plugin):
+    if not type(plugin) is dict:
+       return "Context Object was not a dictionary"
+
+    if not 'plugin-name' in plugin or not type(plugin['plugin-name']) is str:
+        return "Invalid plugin name"
+
+    if not 'description' in plugin or not type(plugin['description']) is str:
+        return "Invalid description"
+
+    if not 'client-modules' in plugin or not type(plugin['client-modules']) is list:
+        return "Invalid list of client modules"
+
+    for client in plugin['client-modules']:
+        rv = validateClientModule(client)
+
+        if type(rv) is str:
+            return rv
+        elif not rv:
+            return "Invalid client module name"
+    
+    return True
 
 def main(): 
+    #Global information for all genreated plugins
     context = {
         'plugin-prefix': 'AWS',
         'sdk-prefix': 'aws-cpp-sdk-',
@@ -712,7 +777,7 @@ def main():
         ],
     }
 
-
+    #command line args
     parser = argparse.ArgumentParser()
     parser.add_argument("command", nargs=1, help='Command to run', choices=["make-plugin",  "list-aws-sdks", "download-sdks", "set-settings"])
     parser.add_argument("--pluginfile", nargs=1, help='location of JSON file that describes the plugin you want to create')
@@ -737,8 +802,15 @@ def main():
 
     elif arg.command[0] == "make-plugin":
         if not arg.pluginfile == None:
-            client_mods  = loadModulesFromFile(arg.pluginfile[0])
-            context['client-modules'] = client_mods
+            plugin = loadPluginFromFile(arg.pluginfile[0])
+
+            if not plugin:
+                return
+
+            context['plugin-name'] = plugin['plugin-name']
+            context['description'] = plugin['description']
+            context['client-modules'] = plugin['client-modules']
+            
         else:
             info = interactivePlugin()
 
@@ -746,8 +818,6 @@ def main():
             context['description'] = info['description']
             context['client-modules'] = info['client-modules']
 
-        #for client in context['client-modules']:
-        #    rv = validateClientModule(client)
 
         with open(os.path.join("./Settings", "localsettings.json")) as fh:
             settings = json.load(fh)
@@ -755,6 +825,7 @@ def main():
         context['binaries-path'] = settings['binaries-path']
         context['output-dir'] = settings['output-dir']
 
+        
         CreatePlugin(context)
 
 

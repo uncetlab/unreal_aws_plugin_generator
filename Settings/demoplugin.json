@@ -1,0 +1,25 @@
+{   
+    "plugin-name": "AwsDemo5",
+    "description": "Plugin generate from file",
+    "client-modules":[
+    {   
+        "client-module-name": "AWSS3",
+        "TPModules": [
+            {
+                "aws-sdk-name": "s3"
+            }
+        ]
+    },
+    {      
+        "client-module-name": "AWSCOGID",
+        "TPModules": [
+            {
+                "aws-sdk-name": "cognito-identity"
+            },
+            {
+                "aws-sdk-name": "cognito-idp"
+            }
+        ]
+    }
+    ]
+}
