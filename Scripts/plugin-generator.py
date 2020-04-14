@@ -5,7 +5,7 @@ import argparse, sys, json
 import requests
 
 tmp_dir = '.tmp'
-output_dir = 'Output'
+
 
 
 def deletetempdirectory():
@@ -330,7 +330,6 @@ def downloadTPModule(sdks):
             print(f"{aws_sdk} is not a valid Third Party Module")
     
 def setSettings():
-    #Will need slight refactor to work with multiple settings
     build_message = ""
     output_message = ""
     was_there_previous_build_setting = False
@@ -565,11 +564,11 @@ def interactivePlugin():
         while not is_valid_response:
             another_module = input(client_message)
 
-            if another_module == "No":
+            if another_module.lower() == "no":
                 finished_making_ClientModules = True
                 is_valid_response = True
 
-            elif another_module == "Yes":
+            elif another_module.lower() == "yes":
                 client_module = interactiveClientModule()
                 if not client_module:
                     #rv was false so it was not a valid TP module
@@ -596,7 +595,11 @@ def loadPluginFromFile(path):
         return False
 
     with open(os.path.join(path)) as fh:
-        loaded_plugin = json.load(fh)
+        try:
+            loaded_plugin = json.load(fh)
+        except:
+            print("Plugin file was not a valid json")
+            return False
 
     rv = validatePlugin(loaded_plugin)
 
@@ -683,6 +686,9 @@ def validatePlugin(plugin):
 
     if not 'client-modules' in plugin or not type(plugin['client-modules']) is list:
         return "Invalid list of client modules"
+
+    if len(plugin['client-modules']) == 0:
+        return "Did not provide any client modules"
 
     for client in plugin['client-modules']:
         rv = validateClientModule(client)
