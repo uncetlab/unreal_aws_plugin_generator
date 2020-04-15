@@ -425,7 +425,7 @@ def setSettings():
 
     new_settings = {}
     new_settings['binaries-path'] = new_binaries_path
-    new_settings['output-dir'] = loaded_settings['binaries-path']
+    new_settings['output-dir'] = new_output_dir
 
     with open(os.path.join('./Settings', "localsettings.json"), 'w') as fh2:
         json.dump(new_settings, fh2)
