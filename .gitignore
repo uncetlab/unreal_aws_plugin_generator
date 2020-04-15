@@ -2,3 +2,5 @@
 .vscode/*
 Output/*
 *.pyc
+
+Settings/local*

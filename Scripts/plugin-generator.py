@@ -564,6 +564,8 @@ def interactiveClientModule():
     return rv
 
 def interactivePlugin():
+    checkSettings()
+
     plugin_name = input("What would you like the name of your plugin to be? ")
     
     while not type(plugin_name) is str:
