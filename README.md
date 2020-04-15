@@ -33,22 +33,22 @@ Before you can complete your first commands, you will be required to initialize 
 
 
 You can change these settings anytime by running  
-```python Scripts/generate.py settings```
+```python Scripts/plugin-generator.py set-settings```
 
 
 ## What sdk are available?
 There are currently 220 available sdks so I can not include them all here. To check them run the following command  
-```python Scripts/generate.py list-aws-sdks```
+```python Scripts/plugin-generator.py list-aws-sdks```
 
 ## Get the compiled aws sdks
-1. Download compiled sdks using ```download-sdks``` command 
+1. Download compiled sdks using ```python Scripts/plugin-generator.py download-sdks --sdks <comma seperated list of sdks>``` command 
 2. Compile it yourself (TODO link to blog about how to do this)
 
 
 ## Generating a plugin
 From the base directory run:
 
-```python Scripts/generate.py make-plugin```
+```python Scripts/plugin-generator.py make-plugin```
 
 ## Plugin From a file
 You can pass a file representing your plugin with the ```--pluginfile``` flag. Below is a description of how that file should look.  

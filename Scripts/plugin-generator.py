@@ -364,10 +364,10 @@ def setSettings():
 
         if not 'binaries-path' in loaded_settings:
             #need to set the binaries path
-            build_message = "Build Directory []: "
+            build_message = "Binaries Directory []: "
 
         else: 
-            build_message = f"Build Directory [{loaded_settings['binaries-path']}]: "
+            build_message = f"Binaries Directory [{loaded_settings['binaries-path']}]: "
             was_there_previous_build_setting = True
 
         if not 'output-dir' in loaded_settings:
@@ -384,13 +384,19 @@ def setSettings():
     if was_there_previous_build_setting and new_binaries_path == "":
         #they want to keep this setting
         new_binaries_path = loaded_settings['binaries-path']
-        print(f"Keeping the previous path of {loaded_settings['binaries-path']}")
+        print(f"Keeping the previous binaries dir of {loaded_settings['binaries-path']}")
 
     else:
         while not has_build_path_been_confirmed:
             if not os.path.isdir(new_binaries_path):
-                print(f"{new_binaries_path} is not a valid path. Try Again.")
-                new_binaries_path = input(build_message)
+                try:
+                    os.mkdir(os.path.join(new_binaries_path))
+                    print(f"Made your Binaries Directory: {new_binaries_path}")
+                    has_build_path_been_confirmed = True
+                except:
+                    print(f"{new_binaries_path} was not already a directory and we could not make it a directory.")
+                    new_binaries_path = input(build_message)
+
             else:
                 #breaks loop
                 has_build_path_been_confirmed = True
@@ -399,14 +405,19 @@ def setSettings():
     has_output_dir_been_confirmed = False
 
     if was_there_previous_output_setting and new_output_dir == "":
-        loaded_settings['binaries-path'] = loaded_settings['output-dir']
+        new_output_dir = loaded_settings['output-dir']
         print(f"keeping the previous output dir of {loaded_settings['output-dir']}")
 
     else:
         while not has_output_dir_been_confirmed:
             if not os.path.isdir(new_output_dir):
-                print(f"{new_output_dir} is not a valid dir. Try Again. ")
-                new_output_dir = input(output_message)
+                try:
+                    os.mkdir(os.path.join(new_output_dir))
+                    print(f"Made your Output directory: {new_output_dir}")
+                    has_output_dir_been_confirmed = True
+                except:
+                    print(f"{new_output_dir} was not already a directory and we could not make it a directory.")
+                    new_output_dir = input(output_message)
             else:
                 has_output_dir_been_confirmed = True 
 
