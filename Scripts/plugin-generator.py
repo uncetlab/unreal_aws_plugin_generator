@@ -341,7 +341,7 @@ def downloadTPModule(sdks):
             print(f"{aws_sdk} is not a valid Third Party Module")
     
 def setSettings():
-    build_message = ""
+    binaries_message = ""
     output_message = ""
     was_there_previous_build_setting = False
     was_there_previous_output_setting = False
@@ -350,7 +350,7 @@ def setSettings():
     if not os.path.isfile(os.path.join('./Settings', 'localsettings.json')):
         #We need to make a local settings file
         #ask them for directory to put modules in
-        build_message = "Build Directory []: "
+        binaries_message = "Binaries Directory []: "
         output_message = "Output Directory []: "
         
     else:
@@ -364,10 +364,10 @@ def setSettings():
 
         if not 'binaries-path' in loaded_settings:
             #need to set the binaries path
-            build_message = "Binaries Directory []: "
+            binaries_message = "Binaries Directory []: "
 
         else: 
-            build_message = f"Binaries Directory [{loaded_settings['binaries-path']}]: "
+            binaries_message = f"Binaries Directory [{loaded_settings['binaries-path']}]: "
             was_there_previous_build_setting = True
 
         if not 'output-dir' in loaded_settings:
@@ -378,7 +378,7 @@ def setSettings():
             output_message = f"Output Directory [{loaded_settings['output-dir']}]: "
             was_there_previous_output_setting = True
     
-    new_binaries_path = input(build_message)
+    new_binaries_path = input(binaries_message)
     has_build_path_been_confirmed = False
 
     if was_there_previous_build_setting and new_binaries_path == "":
@@ -395,7 +395,7 @@ def setSettings():
                     has_build_path_been_confirmed = True
                 except:
                     print(f"{new_binaries_path} was not already a directory and we could not make it a directory.")
-                    new_binaries_path = input(build_message)
+                    new_binaries_path = input(binaries_message)
 
             else:
                 #breaks loop
@@ -567,6 +567,7 @@ def interactivePlugin():
     rv = checkSettings()
 
     if not rv:
+        print("Before you can make a plugin please set your settings:")
         setSettings()
 
     plugin_name = input("What would you like the name of your plugin to be? ")

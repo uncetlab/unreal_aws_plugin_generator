@@ -85,6 +85,9 @@ TP-module is a json of the structure:
 https://github.com/uncetlab/unreal_aws_example_project  
 TODO: link to blog about how I have implenented some of the clients
 
+## Issues
+1. Problem with shutil when on Windows Subsystem Linux (https://bugs.python.org/issue38633)
+
 
 
 
