@@ -1,5 +1,5 @@
 # Unreal AWS Plugin Generator 
-**This is still under some development but the main branch should always remain stable, but if there is a problem please raise an issue or contact Arturo97@live.unc.edu**
+
 
 This repo was created to help with generating Unreal Plugins that link to the compiled aws c++ sdks. Creating Unreal Plugins that link to third party c++ libraries can be a pain to get right, so this code will take care of all the boilerplate files you need need to start building with the aws sdk. Currently only windows and android are supported. 
 
