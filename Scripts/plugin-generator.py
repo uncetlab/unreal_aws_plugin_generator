@@ -270,9 +270,11 @@ def CreatePlugin(context):
 def printAwsSdks(settings):
     #Hard coded to work for directories called aws-cpp-sdk-<sdkname>
     #validate the binaries path is correct
-    for sub_dir in os.listdir(os.path.join(settings['binaries-path'])):        
-        if sub_dir[0:12] == "aws-cpp-sdk-":
-            print(sub_dir[12:])
+    with open(os.path.join("./Settings", "sdks.json")) as fh:
+        sdks = json.load(fh)
+
+    for name in sdks['names']:
+        print(name)
 
 def downloadTPModule(sdks):
     rv = checkSettings()
@@ -294,11 +296,11 @@ def downloadTPModule(sdks):
             #Check if they already have this sdk in the binaries path
             if os.path.isdir(os.path.join(binariesPath, f"aws-cpp-sdk-{aws_sdk}")):
                 replace_sdk = input(f"There is already a {aws_sdk} in your binaries folder. Would you like to replace it? (Yes/No)  ")
-                if replace_sdk == "No":
+                if replace_sdk.lower() == "no":
                     print(f"Skipping {aws_sdk}")
                     continue                
 
-            print(f"downloading {aws_sdk} from S3... It will take a minute")
+            print(f"downloading {aws_sdk}... It will take a minute")
             baseurl = f"https://unreal-aws-compiled-sdks.s3.amazonaws.com/aws-cpp-sdk-{aws_sdk}"
 
             total_keys = len(potiential_sdks[aws_sdk])
@@ -338,7 +340,7 @@ def downloadTPModule(sdks):
             print("")
             print(f"Finished downloading {aws_sdk}")
         else:
-            print(f"{aws_sdk} is not a valid Third Party Module")
+            print(f"{aws_sdk} is not a valid AWS sdk")
     
 def setSettings():
     binaries_message = ""
@@ -819,6 +821,19 @@ def main():
 
     arg = parser.parse_args(sys.argv[1:])
     
+    rv = checkSettings()
+
+    if not rv:
+        print("Before you can use this utility please set your settings:")
+        setSettings()
+
+    with open(os.path.join("./Settings", "localsettings.json")) as fh:
+        settings = json.load(fh)
+
+    context['binaries-path'] = settings['binaries-path']
+    context['output-dir'] = settings['output-dir']
+
+    
 
     if arg.command[0] == "list-aws-sdks":
         printAwsSdks(context)
@@ -852,12 +867,12 @@ def main():
             context['description'] = info['description']
             context['client-modules'] = info['client-modules']
 
-
-        with open(os.path.join("./Settings", "localsettings.json")) as fh:
-            settings = json.load(fh)
-
-        context['binaries-path'] = settings['binaries-path']
-        context['output-dir'] = settings['output-dir']
+        #moved up to start of command
+        #with open(os.path.join("./Settings", "localsettings.json")) as fh:
+        #    settings = json.load(fh)
+#
+        #context['binaries-path'] = settings['binaries-path']
+        #context['output-dir'] = settings['output-dir']
 
         
         CreatePlugin(context)
